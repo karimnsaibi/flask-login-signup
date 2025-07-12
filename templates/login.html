@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="bg-cyan-400 flex items-center justify-center min-h-screen">
+
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md">
+    <div class="flex justify-center mb-6">
+      <img src="{{ url_for('static', filename='tt_pic.png') }}" alt="TT Logo" class="h-20">
+    </div>
+
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Welcome Back</h2>
+
+    <form action="/login" method="post" class="space-y-4">
+      <input type="email" name="email" placeholder="Email"
+             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+      <input type="text" id="user_id" name="user_id" placeholder="User ID" required
+             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+      <input type="password" name="password" placeholder="Password"
+             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+      <button type="submit"
+              class="w-full bg-gradient-to-r from-indigo-500 via-pink-500 to-yellow-400 text-white font-semibold py-2 rounded-lg hover:opacity-90 transition">
+        Sign in
+      </button>
+    </form>
+
+    <p class="text-sm text-center text-gray-600 mt-4">
+      Don't have an account? <a href="/signup" class="text-blue-600 hover:underline">Sign up</a>
+    </p>
+  </div>
+{% endblock %}
+
+</body>
+</html>
