@@ -19,7 +19,10 @@ def init_db():
         password TEXT NOT NULL,
         is_active BOOLEAN DEFAULT 0,
         activation_token TEXT,
-        token_expiry DATETIME
+        token_expiry DATETIME,
+        twofa_code TEXT,
+        twofa_expiry TEXT,
+        last_2fa_sent TEXT
     )
     ''')
     
