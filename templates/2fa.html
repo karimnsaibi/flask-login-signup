@@ -3,29 +3,28 @@
 {% block title %}Two-Factor Authentication{% endblock %}
 
 {% block content %}
-<div class="bg-white p-8 rounded-xl shadow-xl w-full max-w-md">
+<div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md">
   <div class="flex justify-center mb-6">
     <img src="{{ url_for('static', filename='tt_pic.png') }}" alt="TT Logo" class="h-20">
   </div>
 
-  <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">Verify Your Identity</h2>
-  <p class="text-sm text-gray-600 text-center mb-4">
-    A verification code has been sent to your email. Please enter it below.
+  <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">Verify Your Identity</h2>
+  <p class="text-sm text-gray-600 text-center mb-6">
+    A 6-digit verification code was sent to your email. Please enter it below.
   </p>
 
-  <form method="POST" class="space-y-4">
-    <input type="text" name="code" placeholder="Enter 6-digit code"
-           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" required>
+  <form method="POST" class="space-y-5">
+    <input type="text" name="code" placeholder="Enter 6-digit code" required
+           class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
 
     <button type="submit"
-            class="w-full bg-gradient-to-r from-green-500 via-blue-500 to-purple-500 text-white font-semibold py-2 rounded-lg hover:opacity-90 transition">
+            class="w-full bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-600 text-white font-semibold py-3 rounded-lg hover:opacity-90 transition">
       Verify Code
     </button>
   </form>
 
-    <p class="text-sm text-center text-gray-600 mt-4">
-    Didn't get the code? <a href="{{ url_for('resend_2fa') }}" class="text-blue-600 hover:underline">Resend</a>
-    </p>
-
+  <p class="text-sm text-center text-gray-600 mt-4">
+    Didn't receive it? <a href="{{ url_for('resend_2fa') }}" class="text-indigo-700 hover:underline">Resend Code</a>
+  </p>
 </div>
 {% endblock %}
