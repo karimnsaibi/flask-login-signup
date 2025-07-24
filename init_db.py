@@ -74,7 +74,9 @@ def init_db():
     )''')
     # Indexes
     cur.execute('''
-    CREATE INDEX idx_kpi_site_date ON kpi_stats(site_id, date);
+    CREATE INDEX idx_kpi_site_date ON kpi_stats(site_id, date)
+    ''')
+    cur.execute('''
     CREATE INDEX idx_antenna_site ON antenna_config(site_id)
     ''')
 

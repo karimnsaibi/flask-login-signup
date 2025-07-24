@@ -153,6 +153,8 @@ def login():
         #     flash("Account not activated. Please check your email.", "error")
         #     return redirect(url_for('home'))
         if check_password_hash(user['password'], password):
+            session['user_id'] = user['id']
+            session['profile'] = user['profile']
             return redirect(url_for('main'))
             # # Generate 6-digit code
             # import random
@@ -220,7 +222,7 @@ def two_fa():
 def main():
     if 'user_id' not in session:
         return redirect(url_for('home'))
-    return "<h1>Welcome to the main page!</h1>"
+    return render_template('main.html')
 
 
 # Helper function to print all users in the database
@@ -285,6 +287,22 @@ def resend_2fa():
 
     flash("A new verification code has been sent to your email.", "success")
     return redirect(url_for('two_fa'))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Main Page{% endblock %}
+
+{% block content %}
+<div class="w-full fixed top-0 left-0 bg-white shadow z-50">
+  <nav class="bg-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex justify-between">
+        <div class="flex space-x-8 w-full justify-between text-center">
+
+          <!-- GSM Site -->
+          <div class="relative py-4" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+            <button class="text-[#1b1464] font-semibold text-lg hover:text-[#0056b3] transition">Site GSM</button>
+            <div x-show="open" class="absolute left-0 mt-2 origin-top bg-white border border-gray-200 rounded-md shadow-lg py-2 w-52 z-10 text-left">
+              {% if session.profile in ['engineer', 'administrator'] %}
+                <a href="/manage-sites" class="block px-4 py-2 hover:bg-gray-100">Manage Sites</a>
+                <a href="/doc" class="block px-4 py-2 hover:bg-gray-100">Documentations</a>
+                <a href="/dashboard_site" class="block px-4 py-2 hover:bg-gray-100">Dashboards</a>
+              {% else %}
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Manage Sites</span>
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Documentations</span>
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Dashboards</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- GSM Cells -->
+          <div class="relative py-4" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+            <button class="text-[#1b1464] font-semibold text-lg hover:text-[#0056b3] transition">GSM Cells</button>
+            <div x-show="open" class="absolute left-0 mt-2 origin-top bg-white border border-gray-200 rounded-md shadow-lg py-2 w-52 z-10 text-left">
+              {% if session.profile in ['engineer', 'administrator'] %}
+                <a href="/view-sites" class="block px-4 py-2 hover:bg-gray-100">View Sites</a>
+                <a href="/add-site" class="block px-4 py-2 hover:bg-gray-100">Add Site</a>
+              {% else %}
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">View Sites</span>
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Add Site</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Interventions -->
+          <div class="relative py-4" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+            <button class="text-[#1b1464] font-semibold text-lg hover:text-[#0056b3] transition">Interventions</button>
+            <div x-show="open" class="absolute left-0 mt-2 origin-top bg-white border border-gray-200 rounded-md shadow-lg py-2 w-52 z-10 text-left">
+              {% if session.profile in ['technician'] %}
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Manage Tickets</span>
+                <a href="/interventions" class="block px-4 py-2 hover:bg-gray-100">Manage Interventions</a>
+                <a href="/dashboard_intervention" class="block px-4 py-2 hover:bg-gray-100">Dashboards</a>
+              {% elif session.profile in ['engineer'] %}
+                <a href="/tickets" class="block px-4 py-2 hover:bg-gray-100">Manage Tickets</a>
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Manage Interventions</span>
+                <a href="/dashboard_intervention" class="block px-4 py-2 hover:bg-gray-100">Dashboards</a>
+              {% elif session.profile in ['administrator'] %}
+                <a href="/tickets" class="block px-4 py-2 hover:bg-gray-100">Manage Tickets</a>
+                <a href="/interventions" class="block px-4 py-2 hover:bg-gray-100">Manage Interventions</a>
+                <a href="/dashboard_intervention" class="block px-4 py-2 hover:bg-gray-100">Dashboards</a>
+              {% else %}
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Manage Tickets</span>
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Manage Interventions</span>
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Dashboards</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- BI -->
+          <div class="relative py-4" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+            <button class="text-[#1b1464] font-semibold text-lg hover:text-[#0056b3] transition">BI</button>
+            <div x-show="open" class="absolute left-0 mt-2 origin-top bg-white border border-gray-200 rounded-md shadow-lg py-2 w-52 z-10 text-left">
+              {% if session.profile in ['engineer', 'administrator'] %}
+                <a href="/bi" class="block px-4 py-2 hover:bg-gray-100">BI Dashboard</a>
+              {% else %}
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">BI Dashboard</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Database Management -->
+          <div class="relative py-4" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+            <button class="text-[#1b1464] font-semibold text-lg hover:text-[#0056b3] transition">Database</button>
+            <div x-show="open" class="absolute left-0 mt-2 origin-top bg-white border border-gray-200 rounded-md shadow-lg py-2 w-52 z-10 text-left">
+              {% if session.profile in ['manager', 'administrator'] %}
+                <a href="/db-tools" class="block px-4 py-2 hover:bg-gray-100">Manage site codes</a>
+              {% else %}
+                <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Manage site codes</span>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- Page content -->
+<div class="pt-28 px-6">
+  <h1 class="text-4xl font-extrabold text-[#1b1464] tracking-tight">Welcome to the GSM Management System</h1>
+</div>
+{% endblock %}
