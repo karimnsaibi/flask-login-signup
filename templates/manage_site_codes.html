@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Manage Site Codes{% endblock %}
+{% block content %}
+<div class="p-6 max-w-4xl mx-auto">
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-4">
+        {% for category, message in messages %}
+          <div class="px-4 py-2 rounded-md text-white 
+                      {% if category == 'success' %}bg-green-600
+                      {% elif category == 'error' %}bg-red-600
+                      {% else %}bg-gray-600{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <h2 class="text-2xl font-semibold text-gray-800 mb-4">Manage Site Code Pools</h2>
+
+  <!-- Select Region -->
+  <div class="flex gap-4 mb-4">
+    <select id="regionSelect" class="border px-3 py-2 rounded w-1/2">
+      <option value="" disabled selected>Select a region</option>
+      {% for row in ['Ariana','Béja','Ben Arous','Bizerte','Gabès','Gafsa','Jendouba','Kairouan','Kasserine','Kebili','Kef','Mahdia','Manouba','Médenine','Monastir','Nabeul','Sfax','Sidi Bouzid','Siliana','Sousse','Tataouine','Tozeur','Tunis','Zaghouan'] %}
+      <option value="{{ row }}">{{ row }}</option>
+      {% endfor %}
+    </select>
+
+    <!-- Add new code pool -->
+    <input type="number" id="startCode" placeholder="Start Code" class="border px-3 py-2 rounded w-32">
+    <input type="number" id="endCode" placeholder="End Code" class="border px-3 py-2 rounded w-32">
+    <button onclick="addCodePool()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add</button>
+  </div>
+
+  <!-- Table -->
+  <table class="w-full table-auto border border-collapse">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="border px-3 py-2 text-left">Start Code</th>
+        <th class="border px-3 py-2 text-left">End Code</th>
+        <th class="border px-3 py-2 text-center">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="codeTableBody">
+      <tr><td colspan="3" class="text-center py-4 text-gray-500">Select a region to load code pools.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+  let currentRegion = "";
+  let currentData = [];
+
+  document.getElementById("regionSelect").addEventListener("change", function() {
+    currentRegion = this.value;
+    fetchPools();
+  });
+
+  async function fetchPools() {
+    const res = await fetch(`/manage-site-codes/exploit?region=${currentRegion}`);
+    const data = await res.json();
+    if (data.success) {
+      currentData = data.code_pools;
+      renderTable();
+    }
+  }
+
+  function renderTable() {
+    const body = document.getElementById("codeTableBody");
+    body.innerHTML = "";
+    currentData.forEach((row, i) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="border px-3 py-2">
+          <input type="number" value="${row.start_code}" class="w-full p-1 border rounded" data-index="${i}" data-type="start">
+        </td>
+        <td class="border px-3 py-2">
+          <input type="number" value="${row.end_code}" class="w-full p-1 border rounded" data-index="${i}" data-type="end">
+        </td>
+        <td class="border px-3 py-2 text-center">
+          <button class="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded" onclick="confirmEdit(${i})">Save</button>
+          <button class="text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1 ml-2 rounded" onclick="deletePool(${i})">Delete</button>
+        </td>
+      `;
+      body.appendChild(tr);
+    });
+  }
+
+  async function addCodePool() {
+    const start = parseInt(document.getElementById("startCode").value);
+    const end = parseInt(document.getElementById("endCode").value);
+    if (!currentRegion || isNaN(start) || isNaN(end)) return alert("Fill all fields");
+
+    const res = await fetch("/manage-site-codes/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ region: currentRegion, start_code: start, end_code: end })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    fetchPools();
+  }
+
+  async function deletePool(index) {
+    const pool = currentData[index];
+    const res = await fetch("/manage-site-codes/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ region: currentRegion, pools: [pool] })
+    });
+    location.reload();  // Refresh to show flash message
+  }
+
+  async function confirmEdit(index) {
+    const start = document.querySelector(`input[data-index="${index}"][data-type="start"]`).value;
+    const end = document.querySelector(`input[data-index="${index}"][data-type="end"]`).value;
+    const old = currentData[index];
+
+    const res = await fetch("/manage-site-codes/edit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        region: currentRegion,
+        updates: [{
+          old_start: old.start_code,
+          old_end: old.end_code,
+          start_code: parseInt(start),
+          end_code: parseInt(end)
+        }]
+      })
+    });
+
+    location.reload();  // Refresh to reflect updates and flash messages
+  }
+</script>
+{% endblock %}

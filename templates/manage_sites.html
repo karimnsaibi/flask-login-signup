@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Manage GSM Sites{% endblock %}
+{% block content %}
+<div class="pt-28 px-6 max-w-3xl mx-auto">
+  <h2 class="text-2xl font-bold mb-4">Manage GSM Site</h2>
+  <form id="siteForm" method="POST">
+    <div class="grid grid-cols-2 gap-4">
+      <!-- Region -->
+      <div>
+        <label>Region</label>
+        <select name="region" id="regionSelect" required class="input">
+          <option value="" disabled selected>Select region</option>
+          {% for gov in governorates %}
+          <option value="{{ gov }}">{{ gov }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Fetch regions and delegations -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const regionSelect = document.getElementById("regionSelect");
+      const delegationSelect = document.getElementById("delegationSelect");
+
+      fetch("/static/data/delegations.json")
+        .then(response => response.json())
+        .then(data => {
+          Object.keys(data).forEach(region => {
+            const option = document.createElement("option");
+            option.value = region;
+            option.textContent = region;
+            regionSelect.appendChild(option);
+          });
+
+          regionSelect.addEventListener("change", function () {
+            const selected = this.value;
+            const delegations = data[selected] || [];
+
+            delegationSelect.innerHTML = "<option disabled selected>Select delegation</option>";
+            delegations.forEach(delegation => {
+              const option = document.createElement("option");
+              option.value = delegation;
+              option.textContent = delegation;
+              delegationSelect.appendChild(option);
+            });
+          });
+        });
+    });
+  </script>
+
+      <!-- Site Code -->
+      <div>
+        <label>Site Code</label>
+        <select name="site_code" id="codeSelect" required class="input">
+          <option value="" disabled selected>Select site code</option>
+        </select>
+      </div>
+
+      <!-- Delegation -->
+      <div>
+        <label>Delegation</label>
+        <select name="delegation" id="delegationSelect" required class="input">
+          <option value="" disabled selected>Select delegation</option>
+        </select>
+      </div>
+
+      <!-- Site Name -->
+      <div>
+        <label>Site Name</label>
+        <input type="text" name="site_name" required class="input">
+      </div>
+
+      <!-- Coordinates -->
+      <div><label>X (Longitude)</label><input type="text" name="x" required class="input"></div>
+      <div><label>Y (Latitude)</label><input type="text" name="y" required class="input"></div>
+
+      <!-- HBA -->
+      <div><label>HBA</label><input type="text" name="hba" required class="input"></div>
+
+      <!-- Supplier -->
+      <div>
+        <label>Supplier</label>
+        <select name="supplier" required class="input">
+          <option>Huawei</option><option>Ericsson</option>
+        </select>
+      </div>
+
+      <!-- Access -->
+      <div>
+        <label>Access</label>
+        <select name="access" required class="input">
+          <option>Fiber</option><option>Faisceau Hertzien</option>
+        </select>
+      </div>
+
+      <!-- Antenna -->
+      <div><label>Antenna</label><input type="text" name="antenna" required class="input"></div>
+      <!-- Surface -->
+      <div><label>Surface</label><input type="text" name="surface" required class="input"></div>
+    </div>
+    <div class="mt-6 flex space-x-4">
+      <button name="action" value="add" class="btn">Add</button>
+      <button name="action" value="edit" class="btn">Edit</button>
+      <button name="action" value="delete" class="btn delete">Delete</button>
+    </div>
+  </form>
+</div>
+
+<style>
+.input { width: 100%; padding: .5rem; border: 1px solid #ccc; border-radius: .25rem; }
+.btn { padding: .5rem 1rem; background-color: #1b1464; color: white; border: none; border-radius: .25rem; }
+.btn.delete { background-color: #dc2626; }
+.btn:hover { opacity: .9; }
+</style>
+{% endblock %}

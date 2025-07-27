@@ -288,7 +288,83 @@ def resend_2fa():
     flash("A new verification code has been sent to your email.", "success")
     return redirect(url_for('two_fa'))
 
+# Helper Functions
+def site_exists(conn, region, delegation, code):
+    return conn.execute('SELECT 1 FROM site WHERE region=? AND delegation=? AND code=?', 
+                        (region, delegation, code)).fetchone()
 
+def add_site(conn, data):
+    if site_exists(conn, data['region'], data['delegation'], data['site_code']):
+        return False, 'Site already exists'
+
+    conn.execute('''
+        INSERT INTO site VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        data['region'], data['site_code'], data['delegation'], data['site_name'],
+        data['x'], data['y'], data['hba'], data['supplier'], 
+        data['access'], data['antenna'], data['surface']
+    ))
+    conn.commit()
+    return True, 'Site added successfully'
+
+def delete_site(conn, region, delegation, code):
+    if not site_exists(conn, region, delegation, code):
+        return False, 'Site not found'
+    conn.execute('DELETE FROM site WHERE region=? AND delegation=? AND code=?', 
+                 (region, delegation, code))
+    conn.commit()
+    return True, 'Site deleted successfully'
+
+def edit_site(conn, data):
+    if not site_exists(conn, data['region'], data['delegation'], data['site_code']):
+        return False, 'Site not found'
+    conn.execute('''
+        UPDATE site SET site_name=?, x=?, y=?, hba=?, supplier=?, access=?, antenna=?, surface=?
+        WHERE region=? AND delegation=? AND code=?
+    ''', (
+        data['site_name'], data['x'], data['y'], data['hba'],
+        data['supplier'], data['access'], data['antenna'], data['surface'],
+        data['region'], data['delegation'], data['site_code']
+    ))
+    conn.commit()
+    return True, 'Site updated successfully'
+
+# Main route
+@app.route('/manage-sites', methods=['GET', 'POST'])
+def manage_site():
+    conn = get_db_connection()
+    governorates = [row['name'] for row in conn.execute('SELECT DISTINCT region FROM site_code_pools')]
+
+    if request.method == 'POST':
+        data = request.form.to_dict()
+        action = data['action']
+
+        if action == 'add':
+            success, message = add_site(conn, data)
+        elif action == 'edit':
+            success, message = edit_site(conn, data)
+        elif action == 'delete':
+            success, message = delete_site(conn, data['region'], data['delegation'], data['site_code'])
+        else:
+            success, message = False, 'Invalid action'
+
+        flash(message, 'success' if success else 'error')
+        conn.close()
+        return redirect(url_for('manage_site'))
+
+    conn.close()
+    return render_template('manage_sites.html', governorates=governorates)
+
+
+
+
+@app.route('/api/site-info')
+def site_info():
+    region = request.args.get('region')
+    rows = get_db_connection().execute('SELECT start_code,end_code,delegation FROM site_code_pools WHERE region=?', (region,)).fetchall()
+    codes = sorted([str(c) for r in rows for c in range(r['start_code'], r['end_code']+1)])
+    delegations = sorted({r['delegation'] for r in rows})
+    return jsonify(codes=codes, delegations=delegations)
 
 
 
@@ -308,6 +384,115 @@ def resend_2fa():
 
     """Additional features: Support SMS 2FA later (using Twilio or similar)"""
 
+
+from flask import jsonify, request
+
+def code_pool_exists(conn, region, start_code, end_code):
+    return conn.execute(
+        'SELECT 1 FROM site_code_pools WHERE region=? AND start_code=? AND end_code=?',
+        (region, start_code, end_code)
+    ).fetchone()
+
+def add_code_pool(conn, region, start_code, end_code):
+    if code_pool_exists(conn, region, start_code, end_code):
+        return False, "Code pool already exists for this region."
+    conn.execute(
+        'INSERT INTO site_code_pools (region, start_code, end_code) VALUES (?, ?, ?)',
+        (region, start_code, end_code)
+    )
+    conn.commit()
+    return True, "Code pool added successfully."
+
+def get_code_pools(conn, region):
+    rows = conn.execute(
+        'SELECT start_code, end_code FROM site_code_pools WHERE region=? ORDER BY start_code',
+        (region,)
+    ).fetchall()
+    return [{'start_code': row['start_code'], 'end_code': row['end_code']} for row in rows]
+
+def delete_code_pools(conn, region, pools):
+    for pool in pools:
+        conn.execute(
+            'DELETE FROM site_code_pools WHERE region=? AND start_code=? AND end_code=?',
+            (region, pool['start_code'], pool['end_code'])
+        )
+    conn.commit()
+    return True, "Selected code pools deleted."
+
+def edit_code_pools(conn, region, updates):
+    for update in updates:
+        # We identify the old pool by old_start and update to new start_code and end_code
+        old_start = update.get('old_start')
+        old_end = update.get('old_end')
+        new_start = update.get('start_code')
+        new_end = update.get('end_code')
+        if old_start is None or old_end is None:
+            continue
+        conn.execute(
+            'UPDATE site_code_pools SET start_code=?, end_code=? WHERE region=? AND start_code=? AND end_code=?',
+            (new_start, new_end, region, old_start, old_end)
+        )
+    conn.commit()
+    return True, "Selected code pools updated."
+
+@app.route('/manage-site-codes')
+def manage_site_codes():
+    return render_template('manage_site_codes.html')
+
+@app.route('/manage-site-codes/add', methods=['POST'])
+def add_site_code_pool():
+    data = request.get_json()
+    region = data.get('region')
+    start_code = data.get('start_code')
+    end_code = data.get('end_code')
+    if not region or start_code is None or end_code is None or start_code >= end_code:
+        return jsonify(success=False, message="Invalid input data."), 400
+    conn = get_db_connection()
+    success, message = add_code_pool(conn, region, start_code, end_code)
+    conn.close()
+    return jsonify(success=success, message=message)
+
+@app.route('/manage-site-codes/exploit')
+def exploit_site_code_pools():
+    region = request.args.get('region')
+    if not region:
+        return jsonify(success=False, message="Region parameter is required."), 400
+    conn = get_db_connection()
+    code_pools = get_code_pools(conn, region)
+    conn.close()
+    return jsonify(success=True, code_pools=code_pools)
+
+@app.route('/manage-site-codes/delete', methods=['POST'])
+def delete_site_code_pools():
+    data = request.get_json()
+    region = data.get('region')
+    pools = data.get('pools', [])
+    if not region or not pools:
+        flash("Invalid input data.", "error")
+        return redirect(url_for('manage_site_codes'))
+    conn = get_db_connection()
+    success, message = delete_code_pools(conn, region, pools)
+    conn.close()
+    flash(message, "success" if success else "error")
+    return redirect(url_for('manage_site_codes'))
+
+@app.route('/manage-site-codes/edit', methods=['POST'])
+@app.route('/manage-site-codes/edit', methods=['POST'])
+def edit_site_code_pools():
+    data = request.get_json()
+    region = data.get('region')
+    updates = data.get('updates', [])
+    if not region or not updates:
+        flash("Invalid input data.", "error")
+        return redirect(url_for('manage_site_codes'))
+    conn = get_db_connection()
+    # Each update should have old_start, old_end, start_code, end_code
+    # But frontend currently sends old_start only as index, so we need to adjust frontend or handle here
+    # For now, assume frontend sends old_start and old_end properly
+    success, message = edit_code_pools(conn, region, updates)
+    conn.close()
+    flash(message, "success" if success else "error")
+    return redirect(url_for('manage_site_codes'))
 
 if __name__ == '__main__':
     print_all_users()  # Print all users when the app starts

@@ -79,7 +79,7 @@
             <button class="text-[#1b1464] font-semibold text-lg hover:text-[#0056b3] transition">Database</button>
             <div x-show="open" class="absolute left-0 mt-2 origin-top bg-white border border-gray-200 rounded-md shadow-lg py-2 w-52 z-10 text-left">
               {% if session.profile in ['manager', 'administrator'] %}
-                <a href="/db-tools" class="block px-4 py-2 hover:bg-gray-100">Manage site codes</a>
+                <a href="/manage-site-codes" class="block px-4 py-2 hover:bg-gray-100">Manage site codes</a>
               {% else %}
                 <span class="block px-4 py-2 text-gray-400 cursor-not-allowed">Manage site codes</span>
               {% endif %}

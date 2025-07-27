@@ -10,22 +10,6 @@ def init_db():
     cur = conn.cursor()
     
     # Users table
-    # cur.execute('''
-    # CREATE TABLE IF NOT EXISTS users (
-    #     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    #     name TEXT NOT NULL,
-    #     email TEXT NOT NULL UNIQUE,
-    #     user_id TEXT NOT NULL UNIQUE,
-    #     profile TEXT NOT NULL,
-    #     password TEXT NOT NULL,
-    #     is_active BOOLEAN DEFAULT 0,
-    #     activation_token TEXT,
-    #     token_expiry DATETIME,
-    #     twofa_code TEXT,
-    #     twofa_expiry TEXT,
-    #     last_2fa_sent TEXT
-    # )
-    # ''')
     cur.execute('''
     CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -79,7 +63,32 @@ def init_db():
     cur.execute('''
     CREATE INDEX idx_antenna_site ON antenna_config(site_id)
     ''')
-
+    
+    cur.execute('''
+  CREATE TABLE site (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  region TEXT NOT NULL,
+  code TEXT NOT NULL,
+  delegation TEXT NOT NULL,
+  site_name TEXT NOT NULL,
+  x TEXT NOT NULL,
+  y TEXT NOT NULL,
+  hba TEXT NOT NULL,
+  supplier TEXT NOT NULL,
+  access TEXT NOT NULL,
+  antenna TEXT NOT NULL,
+  surface TEXT NOT NULL,
+  UNIQUE(region,code,delegation)
+  ) ''')
+    
+    # Create site_code_pools table
+    cur.execute('''
+  CREATE TABLE site_code_pools (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  region TEXT NOT NULL,
+  start_code INTEGER NOT NULL,
+  end_code INTEGER NOT NULL
+  )''')
 
     
     conn.commit()
