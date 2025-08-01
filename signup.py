@@ -333,7 +333,7 @@ def edit_site(conn, data):
 @app.route('/manage-sites', methods=['GET', 'POST'])
 def manage_site():
     conn = get_db_connection()
-    governorates = [row['name'] for row in conn.execute('SELECT DISTINCT region FROM site_code_pools')]
+    governorates = [row['region'] for row in conn.execute('SELECT DISTINCT region FROM site_code_pools')]
 
     if request.method == 'POST':
         data = request.form.to_dict()
@@ -477,7 +477,6 @@ def delete_site_code_pools():
     return redirect(url_for('manage_site_codes'))
 
 @app.route('/manage-site-codes/edit', methods=['POST'])
-@app.route('/manage-site-codes/edit', methods=['POST'])
 def edit_site_code_pools():
     data = request.get_json()
     region = data.get('region')
@@ -491,9 +490,8 @@ def edit_site_code_pools():
     # For now, assume frontend sends old_start and old_end properly
     success, message = edit_code_pools(conn, region, updates)
     conn.close()
-    flash(message, "success" if success else "error")
+    flash(message if success else "Error updating selected rows", "success" if success else "error")
     return redirect(url_for('manage_site_codes'))
 
 if __name__ == '__main__':
-    print_all_users()  # Print all users when the app starts
     app.run(debug=True)

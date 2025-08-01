@@ -1,22 +1,8 @@
 {% extends 'base.html' %}
 {% block title %}Manage Site Codes{% endblock %}
 {% block content %}
+
 <div class="p-6 max-w-4xl mx-auto">
-  <!-- Flash Messages -->
-  {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <div class="mb-4">
-        {% for category, message in messages %}
-          <div class="px-4 py-2 rounded-md text-white 
-                      {% if category == 'success' %}bg-green-600
-                      {% elif category == 'error' %}bg-red-600
-                      {% else %}bg-gray-600{% endif %}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
 
   <h2 class="text-2xl font-semibold text-gray-800 mb-4">Manage Site Code Pools</h2>
 
@@ -75,10 +61,10 @@
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td class="border px-3 py-2">
-          <input type="number" value="${row.start_code}" class="w-full p-1 border rounded" data-index="${i}" data-type="start">
+          <input type="number" value="${row.start_code}" class="w-full p-1 border rounded editable-code" data-index="${i}" data-type="start" readonly>
         </td>
         <td class="border px-3 py-2">
-          <input type="number" value="${row.end_code}" class="w-full p-1 border rounded" data-index="${i}" data-type="end">
+          <input type="number" value="${row.end_code}" class="w-full p-1 border rounded editable-code" data-index="${i}" data-type="end" readonly>
         </td>
         <td class="border px-3 py-2 text-center">
           <button class="text-sm bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded" onclick="confirmEdit(${i})">Save</button>
@@ -86,8 +72,27 @@
         </td>
       `;
       body.appendChild(tr);
+      // Make inputs editable on double-click
+      document.querySelectorAll('.editable-code').forEach(input => {
+      input.addEventListener('dblclick', () => {
+      unlockInput(input);
+    });
+    });
     });
   }
+
+  // Functions to lock and unlock inputs
+  function unlockInput(input) {
+  input.removeAttribute('readonly');
+  input.classList.add('border', 'border-blue-500', 'bg-white');
+  input.focus();
+}
+
+function lockInput(input) {
+  input.setAttribute('readonly', true);
+  input.classList.remove('border', 'border-blue-500', 'bg-white');
+}
+
 
   async function addCodePool() {
     const start = parseInt(document.getElementById("startCode").value);
@@ -101,7 +106,7 @@
     });
 
     const data = await res.json();
-    alert(data.message);
+    showFlashMessage(data.message, data.success ? 'success' : 'error');
     fetchPools();
   }
 
@@ -112,7 +117,8 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ region: currentRegion, pools: [pool] })
     });
-    location.reload();  // Refresh to show flash message
+    showFlashMessage("Code pool deleted successfully!");
+    fetchPools();
   }
 
   async function confirmEdit(index) {
@@ -133,8 +139,10 @@
         }]
       })
     });
-
-    location.reload();  // Refresh to reflect updates and flash messages
+    lockInput(document.querySelector(`input[data-index="${index}"][data-type="start"]`));
+    lockInput(document.querySelector(`input[data-index="${index}"][data-type="end"]`));
+    showFlashMessage("Code pool updated successfully!", "success");
+    fetchPools();
   }
 </script>
 {% endblock %}
