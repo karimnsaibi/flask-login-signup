@@ -49,7 +49,10 @@ def edit_site(conn, data):
 @app.route('/manage-sites', methods=['GET', 'POST'])
 def manage_site():
     conn = get_db_connection()
-    governorates = [row['region'] for row in conn.execute('SELECT DISTINCT region FROM site_code_pools')]
+    governorates = ['Ariana','Béja','Ben Arous','Bizerte','Gabès','Gafsa',\
+                    'Jendouba','Kairouan','Kasserine','Kebili','Kef','Mahdia',\
+                    'Manouba','Médenine','Monastir','Nabeul','Sfax','Sidi Bouzid',\
+                    'Siliana','Sousse','Tataouine','Tozeur','Tunis','Zaghouan']
 
     if request.method == 'POST':
         data = request.form.to_dict()

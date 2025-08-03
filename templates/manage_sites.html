@@ -10,7 +10,7 @@
         <label>Region</label>
         <select name="region" id="regionSelect" required class="input">
           <option value="" disabled selected>Select region</option>
-          {% for gov in ['Ariana','Béja','Ben Arous','Bizerte','Gabès','Gafsa','Jendouba','Kairouan','Kasserine','Kebili','Kef','Mahdia','Manouba','Médenine','Monastir','Nabeul','Sfax','Sidi Bouzid','Siliana','Sousse','Tataouine','Tozeur','Tunis','Zaghouan'] %}
+          {% for gov in governorates %}
           <option value="{{ gov }}">{{ gov }}</option>
           {% endfor %}
         </select>
