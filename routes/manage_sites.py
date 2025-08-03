@@ -77,7 +77,21 @@ def manage_site():
 @app.route('/api/site-info')
 def site_info():
     region = request.args.get('region')
-    rows = get_db_connection().execute('SELECT start_code,end_code,delegation FROM site_code_pools WHERE region=?', (region,)).fetchall()
-    codes = sorted([str(c) for r in rows for c in range(r['start_code'], r['end_code']+1)])
-    delegations = sorted({r['delegation'] for r in rows})
-    return jsonify(codes=codes, delegations=delegations)
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # Fetch all code pools for the region
+    cur.execute("SELECT start_code, end_code FROM site_code_pools WHERE region = ?", (region,))
+    rows = cur.fetchall()
+
+    # Expand ranges into a list of codes
+    codes = []
+    for row in rows:
+        start = int(row['start_code'])
+        end = int(row['end_code'])
+        codes.extend(list(range(start, end + 1)))
+
+    conn.close()
+
+    # Only return codes. Delegations are handled in frontend.
+    return jsonify({"codes": codes})

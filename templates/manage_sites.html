@@ -10,43 +10,53 @@
         <label>Region</label>
         <select name="region" id="regionSelect" required class="input">
           <option value="" disabled selected>Select region</option>
-          {% for gov in governorates %}
+          {% for gov in ['Ariana','Béja','Ben Arous','Bizerte','Gabès','Gafsa','Jendouba','Kairouan','Kasserine','Kebili','Kef','Mahdia','Manouba','Médenine','Monastir','Nabeul','Sfax','Sidi Bouzid','Siliana','Sousse','Tataouine','Tozeur','Tunis','Zaghouan'] %}
           <option value="{{ gov }}">{{ gov }}</option>
           {% endfor %}
         </select>
       </div>
 
       <!-- Fetch regions and delegations -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const regionSelect = document.getElementById("regionSelect");
-      const delegationSelect = document.getElementById("delegationSelect");
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const regionSelect = document.getElementById("regionSelect");
+  const codeSelect = document.getElementById("codeSelect");
+  const delegationSelect = document.getElementById("delegationSelect");
 
-      fetch("/static/data/delegations.json")
-        .then(response => response.json())
-        .then(data => {
-          Object.keys(data).forEach(region => {
-            const option = document.createElement("option");
-            option.value = region;
-            option.textContent = region;
-            regionSelect.appendChild(option);
-          });
+  // Load delegation list
+  fetch("/static/data/delegations.json")
+    .then(res => res.json())
+    .then(data => {
+      regionSelect.addEventListener("change", function () {
+        const selectedRegion = this.value;
 
-          regionSelect.addEventListener("change", function () {
-            const selected = this.value;
-            const delegations = data[selected] || [];
+        // Populate delegations
+        const delegations = data[selectedRegion] || [];
+        delegationSelect.innerHTML = '<option disabled selected>Select delegation</option>';
+        delegations.forEach(del => {
+          const opt = document.createElement("option");
+          opt.value = del;
+          opt.textContent = del;
+          delegationSelect.appendChild(opt);
+        });
 
-            delegationSelect.innerHTML = "<option disabled selected>Select delegation</option>";
-            delegations.forEach(delegation => {
-              const option = document.createElement("option");
-              option.value = delegation;
-              option.textContent = delegation;
-              delegationSelect.appendChild(option);
+        // Fetch site codes
+        fetch(`/api/site-info?region=${selectedRegion}`)
+          .then(res => res.json())
+          .then(data => {
+            codeSelect.innerHTML = '<option disabled selected>Select site code</option>';
+            data.codes.forEach(code => {
+              const opt = document.createElement("option");
+              opt.value = code;
+              opt.textContent = code;
+              codeSelect.appendChild(opt);
             });
           });
-        });
+      });
     });
-  </script>
+});
+</script>
+
 
       <!-- Site Code -->
       <div>
